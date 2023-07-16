@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stripe Card Element</title>
+  <script src="config.js"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    #card-element {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <form id="payment-form">
+    <div id="card-element">
+      <!-- A Stripe Element will be inserted here. -->
+    </div>
+    <button id="submit-button">Create Card Token</button>
+    <div id="card-errors" role="alert"></div>
+  </form>
+  <div id="token-display"></div>
+
+  <script>
+  var stripe = Stripe(stripePublicKey);
+  var elements = stripe.elements();
+
+  // Create an instance of the card Element.
+  var card = elements.create('card');
+
+  // Add an instance of the card Element into the `card-element` <div>.
+  card.mount('#card-element');
+
+  card.on('change', function(event) {
+    var displayError = document.getElementById('card-errors');
+    if (event.error) {
+      displayError.textContent = event.error.message;
+    } else {
+      displayError.textContent = '';
+    }
+  });
+
+  // Create a token when the form is submitted.
+  var form = document.getElementById('payment-form');
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    stripe.createToken(card).then(function(result) {
+      if (result.error) {
+        // Inform the user if there was an error.
+        var errorElement = document.getElementById('card-errors');
+        errorElement.textContent = result.error.message;
+      } else {
+        // Display the token on the screen.
+        var tokenElement = document.getElementById('token-display');
+        tokenElement.textContent = 'Token ID: ' + result.token.id;
+      }
+    });
+  });
+  </script>
+</body>
+</html>
